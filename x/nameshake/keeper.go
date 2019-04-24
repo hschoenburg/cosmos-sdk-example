@@ -10,7 +10,6 @@ type Keeper struct {
 	coinKeeper bank.Keeper
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
-
 }
 
 func (k Keeper) SetWhois(ctx sdk.Context, name string, whois Whois) {
@@ -36,7 +35,7 @@ func (k Keeper) GetWhois(ctx sdk.Context, name string) Whois {
 }
 
 func (k Keeper) GetOwner(ctx sdk.Context, name string) sdk.AccAddress {
-  return k.GetWhois(ctx, name).Owner
+	return k.GetWhois(ctx, name).Owner
 }
 
 func (k Keeper) ResolveName(ctx sdk.Context, name string) string {

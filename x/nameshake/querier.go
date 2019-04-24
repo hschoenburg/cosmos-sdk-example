@@ -1,83 +1,98 @@
 package nameshake
 
 import (
-  "fmt"
-  "strings"
-  "github.com/cosmos/cosmos-sdk/codec"
-  sdk "github.com/cosmos/cosmos-sdk/codec"
-  abci  "github.com/tendermint/tendermint/abci/types"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"strings"
 )
 
 const (
-  QueryResolve = "resolve"
-  QueryWhois = "whois"
-  QueryNames = "names"
+	QueryResolve = "resolve"
+	QueryWhois   = "whois"
+	QueryNames   = "names"
 )
 
-
 func NewQuerier(keeper Keeper) sdk.Querier {
-  return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
-    switch path[0] {
-      case QueryResolve:
-        return queryResolve(ctx, path[1:], req, keeper)
-      case QueryWhois:
-        return queryWhois(ctx, path[1:], req, keeper)
-      case QueryNames:
-        return queryNames(ctx, req, keeper)
-      default:
-        return nil, sdk.ErrUnknownRequest("unknown nameshake query endpoint")
-    }
-  }
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
+		switch path[0] {
+		case QueryResolve:
+			return queryResolve(ctx, path[1:], req, keeper)
+		case QueryWhois:
+			return queryWhois(ctx, path[1:], req, keeper)
+		case QueryNames:
+			return queryNames(ctx, req, keeper)
+		default:
+			return nil, sdk.ErrUnknownRequest("unknown nameshake query endpoint")
+		}
+	}
+}
+
+func queryNames(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, sdk.Error) {
+	var namesList QueryResNames
+	iterator := keeper.GetNamesIterator(ctx)
+
+	for ; iterator.Valid(); iterator.Next() {
+		name := string(iterator.Key())
+		namesList = append(namesList, name)
+	}
+
+	bz, err := codec.MarshalJSONIndent(keeper.cdc, namesList)
+	if err != nil {
+		panic(err)
+	}
+
+	return bz, nil
 }
 
 func queryResolve(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-  name := path[0]
-  value := keeper.ResolveName(ctx, name)
+	name := path[0]
+	value := keeper.ResolveName(ctx, name)
 
-  if value == "" {
-    return []byte{}, sdk.ErrUnknowRequest("could not resolve name")
-  }
+	if value == "" {
+		return []byte{}, sdk.ErrUnknownRequest("could not resolve name")
+	}
 
-  bz, err2 := codec.MarshallJSONIndent(keeper.cdc, QueryResResolve{value})
+	bz, err2 := codec.MarshalJSONIndent(keeper.cdc, QueryResResolve{value})
 
-  if err2 != nil {
-    panic("could not marshal result to JSON")
-  }
+	if err2 != nil {
+		panic("could not marshal result to JSON")
+	}
 
-  return bz, nil
+	return bz, nil
 }
 
 // payload for resolve query
 type QueryResResolve struct {
-  Value string `json: "value"`
+	Value string `json: "value"`
 }
 
 // QueryResolve implements fmt.Stringer
-func (r QueryResolve) String() string {
-  return r.Value
+func (r QueryResResolve) String() string {
+	return r.Value
 }
 
 func queryWhois(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
 
-  name := path p0]
-  whois := keeper.GetWhois(ctx, name)
+	name := path[0]
+	whois := keeper.GetWhois(ctx, name)
 
-  bz, err2 := codec.MarshalJSONIndent(keeper.cdc, whois)
-  if err2 != nil {
-    panic ("could not marshal result to JSON")
-  }
+	bz, err2 := codec.MarshalJSONIndent(keeper.cdc, whois)
+	if err2 != nil {
+		panic("could not marshal result to JSON")
+	}
 
-  return bz, nil
+	return bz, nil
+}
+
+func (w Whois) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`Owner: %s Value: %s, Price: %s`, w.Owner, w.Value, w.Price))
 }
 
 type QueryResNames []string
 
 //implement fmt.Stringer
 func (q QueryResNames) String() string {
-  return strings.join(n[:], "\n")
+	return strings.Join(q[:], "\n")
 }
-
-
-
-
-

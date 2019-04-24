@@ -1,7 +1,7 @@
 package nameshake
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
+	codec "github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 )
@@ -35,6 +35,10 @@ func (k Keeper) GetWhois(ctx sdk.Context, name string) Whois {
 	return whois
 }
 
+func (k Keeper) GetOwner(ctx sdk.Context, name string) sdk.AccAddress {
+  return k.GetWhois(ctx, name).Owner
+}
+
 func (k Keeper) ResolveName(ctx sdk.Context, name string) string {
 	return k.GetWhois(ctx, name).Value
 }
@@ -42,7 +46,7 @@ func (k Keeper) ResolveName(ctx sdk.Context, name string) string {
 func (k Keeper) SetName(ctx sdk.Context, name string, value string) {
 	whois := k.GetWhois(ctx, name)
 	whois.Value = value
-	k.setWhois(ctx, name, whois)
+	k.SetWhois(ctx, name, whois)
 }
 
 func (k Keeper) HasOwner(ctx sdk.Context, name string) bool {
@@ -52,11 +56,11 @@ func (k Keeper) HasOwner(ctx sdk.Context, name string) bool {
 func (k Keeper) SetOwner(ctx sdk.Context, name string, owner sdk.AccAddress) {
 	whois := k.GetWhois(ctx, name)
 	whois.Owner = owner
-	k.SetWhoIs(ctx, name, whois)
+	k.SetWhois(ctx, name, whois)
 }
 
-func (k Keeper) GetPrice(ctx rdk.Context, name string) sdk.Coins {
-	return k.GetWhoIs(ctx, name).Price
+func (k Keeper) GetPrice(ctx sdk.Context, name string) sdk.Coins {
+	return k.GetWhois(ctx, name).Price
 }
 
 func (k Keeper) SetPrice(ctx sdk.Context, name string, price sdk.Coins) {

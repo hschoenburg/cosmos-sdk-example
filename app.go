@@ -6,15 +6,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/codec"
-	"github.com/cosmos/cosmos-sdk/x/dtsking"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/hschoenburg/cosmos-sdk-example/x/nameshake"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
+  "github.com/hschoenburg/nameshake/x/nameshake"
 )
 
 const (
@@ -35,7 +34,7 @@ type nameShakeApp struct {
 	bankKeeper          bank.Keeper
 	feeCollectionKeeper auth.FeeCollectionKeeper
 	paramsKeeper        params.Keeper
-	nsKeeper            nameservice.Keeper
+	nsKeeper            nameshake.Keeper
 }
 
 func newNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {

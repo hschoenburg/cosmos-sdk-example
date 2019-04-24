@@ -10,11 +10,10 @@ type Whois struct {
   Value string `json:"value"`
   Owner sdk.AccAddress `json:"owner"`
   Price sdk.Coins `json:"price"`
-
 }
 
 func NewWhois() Whois {
   return Whois {
-    Price: MinNamePrice
+    Price: MinNamePrice,
   }
 }

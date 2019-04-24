@@ -79,6 +79,10 @@ func (msg MsgSetName) ValidateBasic() sdk.Error {
 	return nil
 }
 
+func (msg MsgSetName) GetSigners() []sdk.AccAddress {
+  return []sdk.AccAddress{msg.Owner}
+}
+
 func (msg MsgSetName) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {

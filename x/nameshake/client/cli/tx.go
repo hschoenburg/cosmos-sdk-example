@@ -31,12 +31,12 @@ func GetCmdBuyName(cdc *codec.Codec) *cobra.Command {
 			}
 
 			msg := nameshake.NewMsgBuyName(args[0], coins, cliCtx.GetFromAddress())
-			err := msg.ValidateBasic()
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			cliCtx.ParseResponse = true
+			cliCtx.PrintResponse = true
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
 		},
@@ -56,7 +56,7 @@ func GetCmdSetName(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := nameshake.MsgSetName(args[0], args[1], cliCtx.GetFromAddress())
+			msg := nameshake.NewMsgSetName(args[0], args[1], cliCtx.GetFromAddress())
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err

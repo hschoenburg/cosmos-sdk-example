@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
+	nameshake "github.com/hschoenburg/demoDapp/x/nameshake"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ func GetCmdWhois(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Short: "whois name",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCliContext().WithCodec(cdc)
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			name := args[0]
 
 			res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", queryRoute, name), nil)
@@ -45,8 +46,8 @@ func GetCmdWhois(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			var out nameshake.QueryResolve
-			cdc.mustUnmarshalJSON(res, &out)
+			var out nameshake.QueryResResolve
+			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
 	}

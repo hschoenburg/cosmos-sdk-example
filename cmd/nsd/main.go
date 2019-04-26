@@ -15,6 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -129,7 +130,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().String(cli.HomeFlag, DefaultNodeHome, "nodes home directory")
 	cmd.Flags().String(client.FlagChainID, "", "genesis file chain-id, randomly created if left banlk")
-	cmd.Flags.Bool(flagOverwrite, "o", false, "overwrite the genesis.json file")
+	cmd.Flags().BoolP(flagOverwrite, "o", false, "overwrite the genesis.json file")
 
 	return cmd
 
@@ -161,7 +162,7 @@ $ nsd add-genesis-account cosmos1tse7r2fadvlrrgau3pa0ss7cqh55wrv6y9alwh 1000STAK
 			if !common.FileExists(genFile) {
 				return fmt.Errorf("%s does not exist, run `gaiad init` first", genFile)
 			}
-			genContents, err := ioutilReadFile(genFile)
+			genContents, err := ioutil.ReadFile(genFile)
 			if err != nil {
 				return err
 			}
@@ -189,22 +190,23 @@ $ nsd add-genesis-account cosmos1tse7r2fadvlrrgau3pa0ss7cqh55wrv6y9alwh 1000STAK
 				return err
 			}
 
-			return gaiaInit.ExportGenesisFile(genFile, genDoc.CHainID, genDoc.Validators, appStateJSON)
+			return gaiaInit.ExportGenesisFile(genFile, genDoc.ChainID, genDoc.Validators, appStateJSON)
 		},
 	}
 	return cmd
 }
 
-func SimpleAppGenTx(cdc *codec.Codec, pk crypto.pubkey) (
+func SimpleAppGenTx(cdc *codec.Codec, pk crypto.PubKey) (
 	appGenTx, cliPrint json.RawMessage, validator tmtypes.GenesisValidator, err error) {
 
-	addr, secret, err = server.GenerateCoinKey()
+	addr, secret, err := server.GenerateCoinKey()
+
 	if err != nil {
 		return
 	}
 
 	bz, err := cdc.MarshalJSON(struct {
-		Addr sdk.Accress `json:"addr"`
+		Addr sdk.AccAddress `json:"addr"`
 	}{addr})
 	if err != nil {
 		return

@@ -1,6 +1,7 @@
-package main
+package app
 
 import (
+	"encoding/json"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,12 +22,12 @@ const (
 )
 
 type nameShakeApp struct {
-	BaseApp          *bam.BaseApp
+	*bam.BaseApp
 	cdc              *codec.Codec
 	keyMain          *sdk.KVStoreKey
 	keyAccount       *sdk.KVStoreKey
 	keyNS            *sdk.KVStoreKey
-	KeyFeeCollection *sdk.KVStoreKey
+	keyFeeCollection *sdk.KVStoreKey
 	keyParams        *sdk.KVStoreKey
 	tkeyParams       *sdk.TransientStoreKey
 
@@ -37,31 +38,32 @@ type nameShakeApp struct {
 	nsKeeper            nameshake.Keeper
 }
 
-func newNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {
+func NewNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {
 
 	// what is this can we explain it better?
 	cdc := MakeCodec()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc))
 
+	// Maybe some inline comments here explaining the different parts?
 	var app = &nameShakeApp{
 		BaseApp:          bApp,
-		Cdc:              cdc,
+		cdc:              cdc,
 		keyMain:          sdk.NewKVStoreKey("main"),
 		keyAccount:       sdk.NewKVStoreKey("acc"),
 		keyNS:            sdk.NewKVStoreKey("ns"),
 		keyFeeCollection: sdk.NewKVStoreKey("fee_colletion"),
 		keyParams:        sdk.NewKVStoreKey("params"),
-		tkeyParams:       sdk.NewKVStoreKey("transient_params"),
+		tkeyParams:       sdk.NewTransientStoreKey("transient_params"),
 	}
 
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams)
 
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
-		app.KeyAccount,
+		app.keyAccount,
 		app.paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAcount,
+		auth.ProtoBaseAccount,
 	)
 
 	app.bankKeeper = bank.NewBaseKeeper(
@@ -70,7 +72,7 @@ func newNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {
 		bank.DefaultCodespace,
 	)
 
-	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyfeeCollection)
+	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyFeeCollection)
 
 	app.nsKeeper = nameshake.NewKeeper(
 		app.bankKeeper,
@@ -78,7 +80,8 @@ func newNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {
 		app.cdc,
 	)
 
-	app.setAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.feeCollectionKeeper))
+	// what is an antehandler?
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.feeCollectionKeeper))
 
 	app.Router().
 		AddRoute("bank", bank.NewHandler(app.bankKeeper)).
@@ -106,6 +109,7 @@ func newNameShakeApp(logger log.Logger, db dbm.DB) *nameShakeApp {
 	return app
 }
 
+// is this declared elsewhere?
 type GenesisState struct {
 	AuthData auth.GenesisState   `json:"auth"`
 	BankData bank.GenesisState   `json:"bank"`
@@ -125,12 +129,12 @@ func (app *nameShakeApp) initChainer(ctx sdk.Context, req abci.RequestInitChain)
 	}
 
 	for _, acc := range genesisState.Accounts {
-		acc.AccountNumber = app.acountKeeper.GetNextAccountNumber(ctx)
+		acc.AccountNumber = app.accountKeeper.GetNextAccountNumber(ctx)
 		app.accountKeeper.SetAccount(ctx, acc)
 	}
 
 	auth.InitGenesis(ctx, app.accountKeeper, app.feeCollectionKeeper, genesisState.AuthData)
-	bank.initGenesis(ctx, app.bankKeeper, genesisState.BankData)
+	bank.InitGenesis(ctx, app.bankKeeper, genesisState.BankData)
 
 	return abci.ResponseInitChain{}
 }
@@ -165,7 +169,7 @@ func (app *nameShakeApp) ExportAppStateAndValidators() (appState json.RawMessage
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
-	auth.RegisterCoder(cdc)
+	auth.RegisterCodec(cdc)
 	bank.RegisterCodec(cdc)
 	nameshake.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)

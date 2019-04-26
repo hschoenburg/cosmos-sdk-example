@@ -14,13 +14,16 @@ import (
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	nsclient "../client"
-	nsrest "../client/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/client/rest"
+
+	app "github.com/hschoenburg/demoDapp"
+
+	nsclient "github.com/hschoenburg/demoDapp/x/nameshake/client"
+	nsrest "github.com/hschoenburg/demoDapp/x/nameshake/client/rest"
 )
 
 const (
@@ -51,8 +54,8 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
-	rootCmd.PersistentPreRunE = func(_ *cobra.Comman, _ []string) error {
-		return initConfig(rootCmd)
+	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
+		return InitConfig(rootCmd)
 	}
 
 	rootCmd.AddCommand(
@@ -78,10 +81,10 @@ func registerRoutes(rs *lcd.RestServer) {
 
 	rs.CliCtx = rs.CliCtx.WithAccountDecoder(rs.Cdc)
 	rpc.RegisterRoutes(rs.CliCtx, rs.Mux)
-	tx.RegisterRoutes(rs.CliCtx, rs.Mux)
+	tx.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc)
 	auth.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, storeAcc)
-	bank.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, rs.keyBase)
-	nsrest.RegisterRoutes(rs.CliCtx, rx.Mux, rs.Cdc, storeNS)
+	bank.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, rs.KeyBase)
+	nsrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, storeNS)
 }
 
 func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
@@ -107,14 +110,14 @@ func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 	return queryCmd
 }
 
-func txCmd(cdc *amnio.Codec, mc []sdk.ModuleClients) *corbra.Command {
+func txCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   "tx",
 		Short: "Transaction subcommands",
 	}
 
 	txCmd.AddCommand(
-		bankcmd.SendTx(cdc),
+		bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
 		client.LineBreak,
@@ -138,7 +141,7 @@ func InitConfig(cmd *cobra.Command) error {
 	if _, err := os.Stat(cfgFile); err == nil {
 		viper.SetConfigFile(cfgFile)
 
-		if err := voiper.ReadInConfig(); err != nil {
+		if err := viper.ReadInConfig(); err != nil {
 			return err
 		}
 	}

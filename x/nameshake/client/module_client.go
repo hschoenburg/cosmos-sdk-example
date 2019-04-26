@@ -17,12 +17,12 @@ func NewModuleClient(storeKey string, cdc *amino.Codec) ModuleClient {
 }
 
 func (mc ModuleClient) GetQueryCmd() *cobra.Command {
-	nameshkQueryCmd := &cobra.Command{
+	nameshakeQueryCmd := &cobra.Command{
 		Use:   "nameshake",
 		Short: "Querying commands for nameshake module",
 	}
 
-	nameshkQueryCmd.AddCommand(client.GetCommands(
+	nameshakeQueryCmd.AddCommand(client.GetCommands(
 		nameshakecmd.GetCmdResolveName(mc.storeKey, mc.cdc),
 		nameshakecmd.GetCmdWhois(mc.storeKey, mc.cdc),
 	)...)
@@ -36,7 +36,8 @@ func (mc ModuleClient) GetTxCmd() *cobra.Command {
 		Short: "Nameshake transaction subcommands",
 	}
 
-	nameshkTxCmd.AddCommand(clint.PostCommands(
+	// do we need to be wrapping cobra like this?
+	nameshkTxCmd.AddCommand(client.PostCommands(
 		nameshakecmd.GetCmdBuyName(mc.cdc),
 		nameshakecmd.GetCmdSetName(mc.cdc),
 	)...)

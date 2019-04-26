@@ -22,11 +22,11 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, cdc *codec.Codec, 
 	r.HandleFunc(fmt.Sprintf("/%s/names", storeName), buyNameHandler(cdc, cliCtx)).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/names", storeName), setNameHandler(cdc, cliCtx)).Methods("PUT")
 	r.HandleFunc(fmt.Sprintf("/%s/names/{%s}", storeName, restName), resolveNameHandler(cdc, cliCtx, storeName)).Methods("GET")
-	r.HandleFunc(fmt.Sprintf("/%s/names/{%s}/whois", storeName, restName), WHoIsHandler(cdc, cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/names/{%s}/whois", storeName, restName), whoIsHandler(cdc, cliCtx, storeName)).Methods("GET")
 }
 
 func resolveNameHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName string) http.HandlerFunc {
-	return func(q http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		paramType := vars[restName]
 
@@ -41,7 +41,7 @@ func resolveNameHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName s
 }
 
 func whoIsHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName string) http.HandlerFunc {
-	return func(q http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		paramType := vars[restName]
 
@@ -56,7 +56,7 @@ func whoIsHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName string)
 }
 
 func namesHandler(cdc *codec.Codec, cliCtx context.CLIContext, storeName string) http.HandlerFunc {
-	return func(q http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 		res, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/names/%s", storeName), nil)
 		if err != nil {
@@ -121,7 +121,7 @@ func setNameHandler(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req setNameReq
 		if !rest.ReadRESTReq(w, r, cdc, &req) {
-			rest.WriteErrorResponse(w, htttp.StatusBadRequest, "failed to process request")
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to process request")
 			return
 		}
 
@@ -134,7 +134,7 @@ func setNameHandler(cdc *codec.Codec, cliCtx context.CLIContext) http.HandlerFun
 		}
 
 		msg := nameshake.NewMsgSetName(req.Name, req.Value, addr)
-		err := msg.ValidateBasic()
+		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return

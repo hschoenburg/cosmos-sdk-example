@@ -1,63 +1,55 @@
-module demoDapp
+module github.com/hschoenburg/demoDapp
+
+go 1.12
 
 require (
-	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
-	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
-	github.com/bgentry/speakeasy v0.1.0
-	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
-	github.com/btcsuite/btcutil v0.0.0-20180706230648-ab6388e0c60a
-	github.com/cosmos/cosmos-sdk v0.34.1
-	github.com/cosmos/go-bip39 v0.0.0-20180618194314-52158e4697b8
-	github.com/cosmos/ledger-cosmos-go v0.9.11
-	github.com/davecgh/go-spew v1.1.1
-	github.com/ethereum/go-ethereum v1.8.23
-	github.com/fsnotify/fsnotify v1.4.7
-	github.com/go-kit/kit v0.8.0
-	github.com/go-logfmt/logfmt v0.4.0
-	github.com/go-stack/stack v1.8.0
-	github.com/gogo/protobuf v1.1.1
-	github.com/golang/protobuf v1.2.0
-	github.com/golang/snappy v0.0.1
-	github.com/gorilla/mux v1.7.0
-	github.com/gorilla/websocket v1.4.0
-	github.com/hashicorp/hcl v1.0.0
-	github.com/inconshreveable/mousetrap v1.0.0
-	github.com/jmhodges/levigo v1.0.0
-	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
-	github.com/magiconair/properties v1.8.0
-	github.com/mattn/go-isatty v0.0.7
-	github.com/matttproud/golang_protobuf_extensions v1.0.1
-	github.com/mitchellh/mapstructure v1.1.2
-	github.com/pelletier/go-toml v1.2.0
-	github.com/pkg/errors v0.8.0
-	github.com/pmezard/go-difflib v1.0.0
-	github.com/prometheus/client_golang v0.9.2
-	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
-	github.com/prometheus/common v0.2.0
-	github.com/prometheus/procfs v0.0.0-20190328153300-af7bedc223fb
-	github.com/rakyll/statik v0.1.4
-	github.com/rcrowley/go-metrics v0.0.0-20180503174638-e2704e165165
-	github.com/rs/cors v1.6.0
-	github.com/spf13/afero v1.2.2
-	github.com/spf13/cast v1.3.0
+	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
+	github.com/beorn7/perks v1.0.0 // indirect
+	github.com/btcsuite/btcd v0.0.0-20190426011420-63f50db2f70a // indirect
+	github.com/cosmos/cosmos-sdk v0.34.3
+	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d // indirect
+	github.com/cosmos/ledger-cosmos-go v0.10.2 // indirect
+	github.com/fatih/gomodifytags v0.0.0-20180914191908-141225bf62b6 // indirect
+	github.com/gogo/protobuf v1.2.1 // indirect
+	github.com/golang/protobuf v1.3.1 // indirect
+	github.com/google/gofuzz v1.0.0 // indirect
+	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
+	github.com/gorilla/mux v1.7.1
+	github.com/jstemmer/gotags v1.4.1 // indirect
+	github.com/keegancsmith/rpc v1.1.0 // indirect
+	github.com/klauspost/asmfmt v1.2.0 // indirect
+	github.com/koron/iferr v0.0.0-20180615142939-bb332a3b1d91 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-isatty v0.0.7 // indirect
+	github.com/nicksnyder/go-i18n v1.10.0 // indirect
+	github.com/onsi/ginkgo v1.8.0 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
+	github.com/pelletier/go-toml v1.3.0 // indirect
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829 // indirect
+	github.com/prometheus/common v0.3.0 // indirect
+	github.com/prometheus/procfs v0.0.0-20190425082905-87a4384529e0 // indirect
+	github.com/rakyll/statik v0.1.6 // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
+	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/jwalterweatherman v1.1.0
-	github.com/spf13/pflag v1.0.3
-	github.com/spf13/viper v1.0.3
-	github.com/stretchr/testify v1.2.2
-	github.com/syndtr/goleveldb v1.0.0
-	github.com/tendermint/btcd v0.1.1
+	github.com/spf13/viper v1.3.2
+	github.com/stamblerre/gocode v0.0.0-20190327203809-810592086997 // indirect
+	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tendermint/go-amino v0.14.1
-	github.com/tendermint/iavl v0.12.1
-	github.com/tendermint/tendermint v0.31.4
-	github.com/zondax/hid v0.9.0
-	github.com/zondax/ledger-go v0.8.0
-	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
-	golang.org/x/sys v0.0.0-20190329044733-9eb1bfa1ce65
-	golang.org/x/text v0.3.0
-	google.golang.org/genproto v0.0.0-20190327125643-d831d65fe17d
-	google.golang.org/grpc v1.19.1
-	gopkg.in/yaml.v2 v2.2.2
+	github.com/tendermint/iavl v0.12.2 // indirect
+	github.com/tendermint/tendermint v0.31.5
+	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734 // indirect
+	golang.org/x/lint v0.0.0-20190409202823-959b441ac422 // indirect
+	golang.org/x/net v0.0.0-20190501004415-9ce7a6920f09 // indirect
+	golang.org/x/sys v0.0.0-20190426135247-a129542de9ae // indirect
+	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/tools v0.0.0-20190501045030-23463209683d // indirect
+	google.golang.org/appengine v1.4.0 // indirect
+	google.golang.org/genproto v0.0.0-20190425155659-357c62f0e4bb // indirect
+	google.golang.org/grpc v1.20.1 // indirect
+	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a // indirect
 )
 
 replace golang.org/x/crypto => github.com/tendermint/crypto v0.0.0-20180820045704-3764759f34a5

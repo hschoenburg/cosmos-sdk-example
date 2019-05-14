@@ -2,29 +2,33 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
+	//"fmt"
+	//"github.com/cosmos/cosmos-sdk/client"
+	//"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	//"github.com/cosmos/cosmos-sdk/x/auth"
+	//"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	crypto "github.com/tendermint/tendermint/crypto"
+	//"github.com/spf13/viper"
+	//crypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/common"
+	//"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"
-	"io/ioutil"
+	//"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
+	//"path/filepath"
+	//"strings"
 
-	gaiaInit "github.com/cosmos/cosmos-sdk/cmd/gaia/init"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	//gaiaInit "github.com/cosmos/cosmos-sdk/cmd/gaia/init"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	genaccscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
+	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+
+	//sdk "github.com/cosmos/cosmos-sdk/types"
 	app "github.com/hschoenburg/demoDapp"
 	abci "github.com/tendermint/tendermint/abci/types"
-	cfg "github.com/tendermint/tendermint/config"
+	//cfg "github.com/tendermint/tendermint/config"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
@@ -39,7 +43,10 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	cdc := app.MakeCodec()
+
 	ctx := server.NewDefaultContext()
+
+	// what about config?
 
 	rootCmd := &cobra.Command{
 		Use:               "nsd",
@@ -47,14 +54,20 @@ func main() {
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 
-	rootCmd.AddCommand(InitCmd(ctx, cdc))
-	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc))
+	rootCmd.AddCommand(genutilcli.InitCmd(ctx, cdc, app.ModuleBasics))
+	rootCmd.AddCommand(genutilcli.CollectGenTxsCmd(ctx, cdc, genaccounts.AppModuleBasic{}))
+	rootCmd.AddCommand(genutilcli.GenTxCmd(ctx, cdc, app.ModuleBasics,
+		genaccounts.AppModuleBasic{}, app.DefaultNodeHome, app.DefaultCLIHome))
 
-	// wow this line is hard to make sense of
-	server.AddCommands(ctx, cdc, rootCmd, newApp, appExporter())
+	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasics))
+	rootCmd.AddCommand(genutilcli.TestnetCmd(ctx, cdc, app.ModuleBasics, genaccounts.AppModuleBasic{}))
+	rootCmd.AddCommand(genaccscli.AddGenesisAccountCmd(ctx, cdc))
 
-	// whhaaaaaaa????
+	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
+
 	executor := cli.PrepareBaseCmd(rootCmd, "NS", DefaultNodeHome)
+	// What about asserting Invariants?
+
 	err := executor.Execute()
 	if err != nil {
 		panic(err)
@@ -66,13 +79,24 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 	return app.NewNameShakeApp(logger, db)
 }
 
-func appExporter() server.AppExporter {
-	return func(logger log.Logger, db dbm.DB, _ io.Writer, _ int64, _ bool, _ []string) (json.RawMessage, []tmtypes.GenesisValidator, error) {
+func exportAppStateAndTMValidators(
+	logger log.Logger, db dbm.DB, _ io.Writer, height int64, forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tmtypes.GenesisValidator, error) {
+
+	if height != -1 {
 		dapp := app.NewNameShakeApp(logger, db)
-		return dapp.ExportAppStateAndValidators()
+		err := dapp.LoadHeight(height)
+
+		if err != nil {
+			return nil, nil, err
+		}
+		return dapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
+	dapp := app.NewNameShakeApp(logger, db)
+	return dapp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+
 }
 
+/*
 func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
@@ -135,7 +159,9 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	return cmd
 
 }
+*/
 
+/*
 func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-genesis-account [address] [coins[,coins]]",
@@ -227,3 +253,5 @@ func SimpleAppGenTx(cdc *codec.Codec, pk crypto.PubKey) (
 	}
 	return
 }
+
+*/

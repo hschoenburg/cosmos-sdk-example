@@ -44,7 +44,7 @@ func main() {
 	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 	config.Seal()
 
-	mc := []sdk.ModuleClients{
+	mc := []sdk.ModuleClient{
 		nsclient.NewModuleClient(storeNS, cdc),
 	}
 
@@ -58,13 +58,14 @@ func main() {
 		return InitConfig(rootCmd)
 	}
 
+	// what are the different parts being composed here?
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
 		client.ConfigCmd(defaultCLIHome),
 		queryCmd(cdc, mc),
 		txCmd(cdc, mc),
 		client.LineBreak,
-		lcd.ServeCommand(cdc, registerRoutes),
+		lcd.ServeCommand(cdc, registerRoutes), //
 		client.LineBreak,
 		keys.Commands(),
 		client.LineBreak,
@@ -87,7 +88,7 @@ func registerRoutes(rs *lcd.RestServer) {
 	nsrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, storeNS)
 }
 
-func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
+func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClient) *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:     "query",
 		Aliases: []string{"q"},
@@ -110,7 +111,7 @@ func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 	return queryCmd
 }
 
-func txCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
+func txCmd(cdc *amino.Codec, mc []sdk.ModuleClient) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   "tx",
 		Short: "Transaction subcommands",

@@ -6,18 +6,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"os"
-	//"github.com/hschoenburg/demoDapp/x/nameshake"
+	"github.com/hschoenburg/demoDapp/x/nameshake"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
+	"os"
 )
 
 const appName = "nameshake"
@@ -56,8 +56,8 @@ type NameShakeApp struct {
 	bankKeeper          bank.Keeper
 	feeCollectionKeeper auth.FeeCollectionKeeper
 	paramsKeeper        params.Keeper
-	//nsKeeper            nameshake.Keeper
-	mm *sdk.ModuleManager
+	nsKeeper            nameshake.Keeper
+	mm                  *sdk.ModuleManager
 }
 
 func NewNameShakeApp(logger log.Logger, db dbm.DB) *NameShakeApp {
@@ -88,6 +88,8 @@ func NewNameShakeApp(logger log.Logger, db dbm.DB) *NameShakeApp {
 	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(app.cdc, app.keyFeeCollection)
 	//stakingKeeper := staking.NewKeeper(app.cdc, app.keyStaking, app.tkeyStaking, app.bankKeeper, stakingSubSpace, staking.DefaultCodespace)
 
+	app.nsKeeper = nameshake.NewKeeper(app.bankKeeper, app.keyNS, app.cdc)
+
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams, params.DefaultCodespace)
 
 	app.accountKeeper = auth.NewAccountKeeper(
@@ -111,6 +113,7 @@ func NewNameShakeApp(logger log.Logger, db dbm.DB) *NameShakeApp {
 		auth.NewAppModule(app.accountKeeper, app.feeCollectionKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		//staking.NewAppModule(app.stakingKeeper, app.feeCollectionKeeper, app.accountKeeper),
+		nameshake.NewAppModule(app.nsKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers()
@@ -122,14 +125,6 @@ func NewNameShakeApp(logger log.Logger, db dbm.DB) *NameShakeApp {
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 
 	app.MountStores(app.keyMain, app.keyAccount, app.keyFeeCollection, app.keyParams, app.tkeyParams)
-
-	/*
-		app.nsKeeper = nameshake.NewKeeper(
-			app.bankKeeper,
-			app.keyNS,
-			app.cdc,
-		)
-	*/
 
 	// what is an antehandler?
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.feeCollectionKeeper, auth.DefaultSigVerificationGasConsumer))
